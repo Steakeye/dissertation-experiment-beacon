@@ -3,9 +3,8 @@ var ble = require("ble_eddystone");
 // Here are your list of URLs. Change these to your own site & use a URL
 // shortener to keep them small.
 const urls = [
-  { url: "https://google.com", led: LED1 },
-  { url: "https://duckduckgo.com", led: LED3 },
-  { url: "https://bing.com", led: LED2 },
+  { url: "https://goo.gl/dVPA9n", led: LED2 },
+  { url: {}, led: LED3 }
 ];
 
 let currentUrl = undefined;
@@ -36,20 +35,22 @@ function checkBattery() {
 }
 
 function toggleBeacon() {
-  if (currentUrl >= 0) {
+  if (currentUrl === 0) {
     currentUrl++;
   } else {
     currentUrl = 0;
   }
-
-  if (urls[currentUrl]) {
+  
+  const advertisingVal = urls[currentUrl].url;
+  
+  if (advertisingVal instanceof string) {
+    console.log("Setting url to ", urls[currentUrl]);
     ble.advertise(urls[currentUrl].url);
-    setLed(urls[currentUrl].led, undefined, afterToggleBeacon);
   } else {
-    currentUrl = undefined;
-    NRF.setAdvertising({});
-    alert(LED1, 500, 1000);
+    console.log("Stopping advertising.");
+    NRF.setAdvertising({}); 
   }
+  setLed(urls[currentUrl].led, undefined, afterToggleBeacon);
 }
 
 function afterToggleBeacon() {
@@ -71,6 +72,7 @@ function alert(led, onDuration, gap) {
 }
 
 function onUp() {
+  console.log("button up");
   const delta = Date().ms - downTime;
   if (delta > 750 && delta < 1500) {
     toggleBeacon();
@@ -81,6 +83,7 @@ function onUp() {
 
 function onDown() {
   if (allowPush) {
+    console.log("down push");
     allowPush = false;
     downTime = Date().ms;
     setWatch(onUp, BTN, { edge: 'falling', debounce: 50 });
