@@ -77,18 +77,23 @@ function onUp() {
 
   if (delta <= 750) {
     console.log("refresh beacon");
-    NRF.setAdvertising({});
+    if (currentUrl !== undefined) {
+      NRF.setAdvertising({});
 
-    setTimeout(function() {
-      ble.advertise(urls[currentUrl].url);
-    }, 17);
+      setTimeout(function() {
+        ble.advertise(urls[currentUrl].url);
+      }, 17);
+    }
   } else if (delta < 2000) {
     console.log("toggle beacon");
     toggleBeacon();
   } else {
     console.log("display settings");
     alert(LED1);
-    alert(urls[currentUrl].led);
+
+    if (currentUrl !== undefined) {
+      alert(urls[currentUrl].led);
+    }
   }
 }
 
@@ -103,5 +108,5 @@ function onDown() {
 
 setWatch(onDown, BTN, { repeat: true, edge: 'rising', debounce: 50 });
 
-// Saving will store the code on the Puck.js to allow it to be run after removing the battery.
+// Saving stores the code in memory, allowing it to run after removing the battery.
 save();
