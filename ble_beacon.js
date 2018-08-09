@@ -1,10 +1,8 @@
 var ble = require("ble_eddystone");
 
-// Here are your list of URLs. Change these to your own site & use a URL
-// shortener to keep them small.
 const urls = [
   { url: "https://goo.gl/dVPA9n", led: LED2 },
-  { url: {}, led: LED3 }
+  { url: undefined, led: LED3 }
 ];
 
 let currentUrl;
@@ -28,7 +26,7 @@ function setLed(led, duration, callback) {
 
 function checkBattery() {
   if(Puck.getBatteryPercentage() <= 20) {
-    alert(LED3);
+    alert(LED1);
   } else {
     allowPush = true;
   }
@@ -43,11 +41,11 @@ function toggleBeacon() {
 
   const advertisingVal = urls[currentUrl].url;
 
-  if (advertisingVal instanceof string) {
-    console.log("Setting url to ", urls[currentUrl]);
+  if (typeof advertisingVal === "string") {
+    //console.log("Setting url to ", urls[currentUrl]);
     ble.advertise(urls[currentUrl].url);
   } else {
-    console.log("Stopping advertising.");
+    //console.log("Stopping advertising.");
     NRF.setAdvertising({});
   }
   setLed(urls[currentUrl].led, undefined, afterToggleBeacon);
@@ -72,34 +70,47 @@ function alert(led, onDuration, gap) {
 }
 
 function onUp() {
-  console.log("button up");
+  //console.log("button up");
   const delta = Date().ms - downTime;
 
   if (delta <= 750) {
-    console.log("refresh beacon");
-    if (currentUrl !== undefined) {
-      NRF.setAdvertising({});
+    //console.log("refresh beacon");
 
-      setTimeout(function() {
-        ble.advertise(urls[currentUrl].url);
-      }, 17);
+    if (currentUrl !== undefined) {
+      //console.log("currentUrl !== undefined");
+      const refreshUrl = urls[currentUrl].url;
+
+      if (typeof refreshUrl === "string") {
+        NRF.setAdvertising({});
+
+        setTimeout(function() {
+          ble.advertise(refreshUrl);
+          allowPush = true;
+        }, 17);
+      } else {
+        allowPush = true;
+      } 
+    } else {
+      allowPush = true;
     }
   } else if (delta < 2000) {
-    console.log("toggle beacon");
+    //console.log("toggle beacon");
     toggleBeacon();
   } else {
-    console.log("display settings");
+    //console.log("display settings");
     alert(LED1);
 
     if (currentUrl !== undefined) {
       alert(urls[currentUrl].led);
     }
   }
+  //console.log("exit:button up");
 }
 
 function onDown() {
+  //console.log("allowPush", allowPush);
   if (allowPush) {
-    console.log("down push");
+    //console.log("down push");
     allowPush = false;
     downTime = Date().ms;
     setWatch(onUp, BTN, { edge: 'falling', debounce: 50 });
