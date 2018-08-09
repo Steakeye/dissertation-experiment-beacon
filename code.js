@@ -7,8 +7,8 @@ const urls = [
   { url: {}, led: LED3 }
 ];
 
-let currentUrl = undefined;
-let downTime = undefined;
+let currentUrl;
+let downTime;
 let allowPush = true;
 
 function setLed(led, duration, callback) {
@@ -40,15 +40,15 @@ function toggleBeacon() {
   } else {
     currentUrl = 0;
   }
-  
+
   const advertisingVal = urls[currentUrl].url;
-  
+
   if (advertisingVal instanceof string) {
     console.log("Setting url to ", urls[currentUrl]);
     ble.advertise(urls[currentUrl].url);
   } else {
     console.log("Stopping advertising.");
-    NRF.setAdvertising({}); 
+    NRF.setAdvertising({});
   }
   setLed(urls[currentUrl].led, undefined, afterToggleBeacon);
 }
@@ -74,10 +74,21 @@ function alert(led, onDuration, gap) {
 function onUp() {
   console.log("button up");
   const delta = Date().ms - downTime;
-  if (delta > 750 && delta < 1500) {
+
+  if (delta <= 750) {
+    console.log("refresh beacon");
+    NRF.setAdvertising({});
+
+    setTimeout(function() {
+      ble.advertise(urls[currentUrl].url);
+    }, 17);
+  } else if (delta < 2000) {
+    console.log("toggle beacon");
     toggleBeacon();
   } else {
+    console.log("display settings");
     alert(LED1);
+    alert(urls[currentUrl].led);
   }
 }
 
