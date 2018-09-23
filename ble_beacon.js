@@ -1,8 +1,8 @@
 var ble = require("ble_eddystone");
 
 const urls = [
-  { url: "https://goo.gl/dVPA9n", led: LED2 },
-  { url: undefined, led: LED3 }
+  { url: "https://goo.gl/dVPA9n", led: LED2 }, // green
+  { url: undefined, led: LED3 } // blue
 ];
 
 let currentUrl;
